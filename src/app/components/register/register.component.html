@@ -1,0 +1,78 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Create Account</h1>
+      <p>Sign up to get started</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="submitForm()" class="auth-form">
+      <div class="form-field" [class.error]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+        <label for="username">Full Name</label>
+        <div class="input-container">
+          <input type="text" id="username" formControlName="username" placeholder="Your name" />
+          <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+        </div>
+        <div class="error-message" *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+          <span *ngIf="registerForm.get('username')?.errors?.['required']">Name is required</span>
+        </div>
+      </div>
+
+      <div class="form-field" [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+        <label for="email">Email</label>
+        <div class="input-container">
+          <input type="email" id="email" formControlName="email" placeholder="your@email.com" />
+          <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </div>
+        </div>
+        <div class="error-message" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          <span *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="registerForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+        </div>
+      </div>
+
+      <div class="form-field" [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+        <label for="password">Password</label>
+        <div class="input-container">
+          <input type="password" id="password" formControlName="password" placeholder="••••••••" />
+          <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+        </div>
+        <div class="error-message" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+          <span *ngIf="registerForm.get('password')?.errors?.['required']">Password is required</span>
+        </div>
+      </div>
+
+      <div class="form-field" [class.error]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched || registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="input-container">
+          <input type="password" id="confirmPassword" formControlName="confirmPassword" placeholder="••••••••" />
+          <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+        </div>
+        <div class="error-message" *ngIf="(registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) || (registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched)">
+          <span *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">Confirm password is required</span>
+          <span *ngIf="registerForm.errors?.['passwordMismatch']">Passwords do not match</span>
+        </div>
+      </div>
+
+      <div class="terms-agreement">
+        <input type="checkbox" id="terms" />
+        <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+      </div>
+
+      <button type="submit" class="submit-button" [disabled]="registerForm.invalid">
+        <span>Create Account</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a routerLink="/login">Sign in</a></p>
+      </div>
+    </form>
+  </div>
+</div>
