@@ -12,6 +12,9 @@ import { JiraService } from "src/app/service/jira.service"
   styleUrls: ["./dashboard.component.scss"],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
+  // ========== ÉTAPE 2.1: PROPRIÉTÉS DE DONNÉES ==========
+
+  // Statistiques
   projectStats: ProjectStats = {
     totalProjects: 0,
     activeProjects: 0,
@@ -27,6 +30,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     recentIssues: [],
   }
 
+  // États de l'interface
   loading = {
     projects: true,
     issues: true,
@@ -39,6 +43,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     message: "",
   }
 
+  // Gestion des subscriptions
   private destroy$ = new Subject<void>()
 
   constructor(
@@ -46,6 +51,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private router: Router,
   ) {}
 
+  /**
+   * Méthode de debug pour diagnostiquer les problèmes API
+   */
   private debugApiCalls(): void {
     console.log("🔍 Debug: Vérification du token")
     const token = localStorage.getItem("jwt")
@@ -61,13 +69,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
     })
   }
 
+  /**
+   * ÉTAPE 2.2: INITIALISATION DU COMPOSANT
+   * Charge toutes les données nécessaires au dashboard
+   */
   ngOnInit(): void {
-    this.debugApiCalls()
+    this.debugApiCalls() // Ajoutez cette ligne
     this.initializeDashboard()
   }
 
+  /**
+   * ÉTAPE 2.3: CHARGEMENT INITIAL DES DONNÉES
+   * Utilise combineLatest pour charger projets et tickets en parallèle
+   */
   private initializeDashboard(): void {
     this.loading.overall = true
+
+    // Chargement des projets
     this.jiraService
       .getAllProjects()
       .pipe(takeUntil(this.destroy$))
@@ -89,6 +107,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
       })
 
+    // Chargement des tickets
     this.jiraService
       .getAllIssues(0, 100)
       .pipe(takeUntil(this.destroy$))
@@ -113,6 +132,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
       })
   }
+
+  /**
+   * ÉTAPE 2.4: CHARGEMENT DES STATISTIQUES PROJETS
+   * Utilise les observables réactifs du service
+   */
   private loadProjectStats(): void {
     this.jiraService
       .getProjectStats()
@@ -122,6 +146,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       })
   }
 
+  /**
+   * ÉTAPE 2.5: CHARGEMENT DES STATISTIQUES TICKETS
+   * Calcule les métriques en temps réel
+   */
   private loadIssueStats(): void {
     this.jiraService
       .getIssueStats()
@@ -131,6 +159,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       })
   }
 
+  /**
+   * ÉTAPE 2.6: MÉTHODES DE NAVIGATION
+   * Navigation vers les différentes sections avec état
+   */
   navigateToProjects(): void {
     this.router.navigate(["/projects"], {
       state: { fromDashboard: true },
