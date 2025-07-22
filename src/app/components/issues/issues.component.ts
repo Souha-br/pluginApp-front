@@ -2,6 +2,14 @@ import { Component, type OnInit } from "@angular/core"
 import { Router, ActivatedRoute } from "@angular/router"
 import { Issue } from "../../models/issue.model"
 import { JiraService } from "src/app/service/jira.service"
+import { forkJoin } from 'rxjs'
+
+interface User {
+  id: string;
+  username: string;
+  displayName: string;
+  emailAddress?: string;
+}
 
 @Component({
   selector: "app-issues",
@@ -11,14 +19,18 @@ import { JiraService } from "src/app/service/jira.service"
 export class IssuesComponent implements OnInit {
   issues: Issue[] = []
   filteredIssues: Issue[] = []
+  users: User[] = []
   loading = true
   searchTerm = ""
   selectedProject = ""
   selectedStatus = ""
+  selectedAssignee = ""
+  selectedIssueType = ""
 
   statusOptions: string[] = []
   projectOptions: string[] = []
-  sortDirection: "asc" | "desc" = "asc"
+  assigneeOptions: { id: string, displayName: string }[] = []
+  issueTypeOptions: string[] = []
 
   constructor(
     private jiraService: JiraService,
@@ -27,7 +39,6 @@ export class IssuesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Vérifier si on vient d'un projet spécifique
     this.route.queryParams.subscribe((params) => {
       if (params["project"]) {
         this.selectedProject = params["project"]
@@ -40,17 +51,26 @@ export class IssuesComponent implements OnInit {
 
   loadAllIssues(): void {
     this.loading = true
-    this.jiraService.getAllIssues(0, 100).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.issues = response.issues
+
+    forkJoin({
+      issues: this.jiraService.getAllIssues(0, 100),
+      users: this.jiraService.getAllUsers()
+    }).subscribe({
+      next: (response: any) => {
+        if (response.issues.success) {
+          this.issues = response.issues.issues
           this.filteredIssues = [...this.issues]
-          this.extractFilterOptions()
         }
+
+        if (response.users.success) {
+          this.users = response.users.users || response.users
+        }
+
+        this.extractFilterOptions()
         this.loading = false
       },
-      error: (error) => {
-        console.error("Erreur lors du chargement des tickets:", error)
+      error: (error: any) => {
+        console.error("Erreur lors du chargement des données:", error)
         this.loading = false
       },
     })
@@ -58,29 +78,38 @@ export class IssuesComponent implements OnInit {
 
   loadIssuesByProject(projectKey: string): void {
     this.loading = true
-    this.jiraService.getIssuesByProject(projectKey).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.issues = response.issues
+
+    forkJoin({
+      issues: this.jiraService.getIssuesByProject(projectKey),
+      users: this.jiraService.getUsersByProject ?
+        this.jiraService.getUsersByProject(projectKey) :
+        this.jiraService.getAllUsers()
+    }).subscribe({
+      next: (response: any) => {
+        if (response.issues.success) {
+          this.issues = response.issues.issues
           this.filteredIssues = [...this.issues]
-          this.extractFilterOptions()
         }
+
+        if (response.users.success) {
+          this.users = response.users.users || response.users
+        }
+
+        this.extractFilterOptions()
         this.loading = false
       },
-      error: (error) => {
-        console.error("Erreur lors du chargement des tickets du projet:", error)
+      error: (error: any) => {
+        console.error("Erreur lors du chargement des données du projet:", error)
         this.loading = false
       },
     })
   }
 
   private extractFilterOptions(): void {
-    // Extraire les statuts uniques en filtrant les valeurs undefined
     this.statusOptions = [
       ...new Set(this.issues.map((issue) => issue.status).filter((status): status is string => Boolean(status))),
     ].sort()
 
-    // Extraire les projets uniques en filtrant les valeurs undefined
     this.projectOptions = [
       ...new Set(
         this.issues
@@ -88,6 +117,38 @@ export class IssuesComponent implements OnInit {
           .filter((projectName): projectName is string => Boolean(projectName)),
       ),
     ].sort()
+
+    // Extraction des types de tickets
+    this.issueTypeOptions = [
+      ...new Set(
+        this.issues
+          .map((issue) => issue.issueType)
+          .filter((issueType): issueType is string => Boolean(issueType))
+      )
+    ].sort()
+
+    const assigneeIds = [
+      ...new Set(
+        this.issues
+          .map((issue) => issue.assignee)
+          .filter((assignee): assignee is string => Boolean(assignee))
+      )
+    ]
+
+    this.assigneeOptions = assigneeIds
+      .map(assigneeId => {
+        const user = this.users.find(u => u.id === assigneeId || u.username === assigneeId)
+        return {
+          id: assigneeId,
+          displayName: user ? user.displayName : assigneeId
+        }
+      })
+      .sort((a, b) => a.displayName.localeCompare(b.displayName))
+  }
+
+  getAssigneeDisplayName(assigneeId: string): string {
+    const user = this.users.find(u => u.id === assigneeId || u.username === assigneeId)
+    return user ? user.displayName : assigneeId
   }
 
   onSearch(): void {
@@ -102,28 +163,42 @@ export class IssuesComponent implements OnInit {
     this.applyFilters()
   }
 
+  onAssigneeChange(): void {
+    this.applyFilters()
+  }
+
+  onIssueTypeChange(): void {
+    this.applyFilters()
+  }
+
   applyFilters(): void {
     let filtered = [...this.issues]
 
-    // Filtre par terme de recherche
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase()
       filtered = filtered.filter(
         (issue) =>
           issue.summary.toLowerCase().includes(term) ||
           issue.key.toLowerCase().includes(term) ||
-          (issue.description && issue.description.toLowerCase().includes(term)),
+          (issue.description && issue.description.toLowerCase().includes(term)) ||
+          (issue.assignee && this.getAssigneeDisplayName(issue.assignee).toLowerCase().includes(term))
       )
     }
 
-    // Filtre par statut
     if (this.selectedStatus) {
       filtered = filtered.filter((issue) => issue.status === this.selectedStatus)
     }
 
-    // Filtre par projet (si pas déjà filtré par URL)
     if (this.selectedProject && !this.route.snapshot.queryParams["project"]) {
       filtered = filtered.filter((issue) => issue.projectName === this.selectedProject)
+    }
+
+    if (this.selectedAssignee) {
+      filtered = filtered.filter((issue) => issue.assignee === this.selectedAssignee)
+    }
+
+    if (this.selectedIssueType) {
+      filtered = filtered.filter((issue) => issue.issueType === this.selectedIssueType)
     }
 
     this.filteredIssues = filtered
@@ -132,6 +207,8 @@ export class IssuesComponent implements OnInit {
   clearFilters(): void {
     this.searchTerm = ""
     this.selectedStatus = ""
+    this.selectedAssignee = ""
+    this.selectedIssueType = ""
     if (!this.route.snapshot.queryParams["project"]) {
       this.selectedProject = ""
     }
@@ -142,46 +219,105 @@ export class IssuesComponent implements OnInit {
     this.router.navigate(["/dashboard"])
   }
 
-  getStatusColor(status: string): string {
-    switch (status?.toLowerCase()) {
-      case "done":
-      case "closed":
-        return "#10b981"
-      case "in progress":
-      case "in review":
-        return "#f59e0b"
-      case "to do":
-      case "open":
-        return "#ef4444"
-      default:
-        return "#6b7280"
-    }
-  }
-
-  getPriorityColor(priority: string): string {
-    switch (priority?.toLowerCase()) {
-      case "highest":
-      case "critical":
-        return "#dc2626"
-      case "high":
-        return "#ea580c"
-      case "medium":
-        return "#d97706"
-      case "low":
-        return "#65a30d"
-      case "lowest":
-        return "#059669"
-      default:
-        return "#6b7280"
-    }
-  }
-
-  formatDate(dateString: string): string {
+  formatDate(dateString?: string): string {
     if (!dateString) return "N/A"
-    const date = new Date(dateString)
-    return date.toLocaleDateString("fr-FR")
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    } catch {
+      return "Date invalide"
+    }
   }
-  getSortArrowPoints(): string {
-    return this.sortDirection === "asc" ? "6 9 12 15 18 9" : "18 15 12 9 6 15"
+
+  getIssueTypeClass(issueType?: string): string {
+    if (!issueType) return "task"
+    switch (issueType.toLowerCase()) {
+      case "bug":
+      case "problème":
+      case "incident":
+        return "bug"
+      case "story":
+      case "user story":
+      case "demande de service":
+        return "story"
+      case "epic":
+        return "epic"
+      case "changement":
+        return "change"
+      case "aide informatique":
+        return "help"
+      case "requête de service":
+      case "requête de service avec amélioration":
+        return "service-request"
+      case "sous-tâche":
+        return "subtask"
+      case "task":
+      case "tâche":
+      default:
+        return "task"
+    }
+  }
+
+  getIssueTypeIcon(issueType?: string): string {
+    if (!issueType) return "T"
+    switch (issueType.toLowerCase()) {
+      case "bug":
+      case "problème":
+      case "incident":
+        return "B"
+      case "story":
+      case "user story":
+      case "demande de service":
+        return "S"
+      case "epic":
+        return "E"
+      case "changement":
+        return "C"
+      case "aide informatique":
+        return "H"
+      case "requête de service":
+      case "requête de service avec amélioration":
+        return "R"
+      case "sous-tâche":
+        return "ST"
+      case "task":
+      case "tâche":
+      default:
+        return "T"
+    }
+  }
+
+  getPriorityClass(priority?: string): string {
+    if (!priority) return "medium"
+    const priorityLower = priority.toLowerCase()
+
+    if (priorityLower.includes("blocker") || priorityLower.includes("bloqueur")) return "blocker"
+    if (priorityLower.includes("high") || priorityLower.includes("haute")) return "high"
+    if (priorityLower.includes("medium") || priorityLower.includes("moyenne")) return "medium"
+    if (priorityLower.includes("low") || priorityLower.includes("basse")) return "low"
+    if (priorityLower.includes("minor") || priorityLower.includes("mineure")) return "minor"
+
+    return "medium"
+  }
+
+  getStatusClass(status?: string): string {
+    if (!status) return "open"
+    const statusLower = status.toLowerCase()
+
+    if (statusLower.includes("annulé") || statusLower.includes("cancelled")) return "cancelled"
+    if (statusLower.includes("done") || statusLower.includes("closed") || statusLower.includes("terminé")) return "done"
+    if (statusLower.includes("progress") || statusLower.includes("cours") || statusLower.includes("development"))
+      return "in-progress"
+    if (statusLower.includes("blocked") || statusLower.includes("bloqué")) return "blocked"
+    if (statusLower.includes("support") || statusLower.includes("attente du support")) return "support"
+    if (statusLower.includes("approbation") || statusLower.includes("approval")) return "approval"
+    if (statusLower.includes("todo") || statusLower.includes("to do")) return "to-do"
+    if (statusLower.includes("ouvert") || statusLower.includes("open")) return "open"
+
+    return "open"
   }
 }

@@ -1,5 +1,5 @@
 <div class="projects-container">
-  <!-- HEADER AVEC ACTIONS -->
+  <!-- HEADER AMÉLIORÉ STYLE DASHBOARD -->
   <div class="projects-header">
     <div class="header-left">
       <button class="back-button" (click)="goBack()">
@@ -48,7 +48,7 @@
     </div>
   </div>
 
-  <!-- BARRE DE FILTRES -->
+  <!-- BARRE DE FILTRES AMÉLIORÉE -->
   <div class="filters-section">
     <div class="search-container">
       <input
@@ -118,7 +118,7 @@
   <div class="projects-content">
     <!-- État de chargement -->
     <div *ngIf="loading" class="loading-state">
-      <div class="spinner"></div>
+      <div class="loading-spinner"></div>
       <p>Chargement des projets...</p>
     </div>
 
@@ -149,9 +149,9 @@
 
     <!-- LISTE DES PROJETS -->
     <div *ngIf="!loading && !error && filteredProjects.length > 0">
-      <!-- Vue grille -->
+      <!-- Vue grille AMÉLIORÉE -->
       <div *ngIf="viewMode === 'grid'" class="projects-grid">
-        <div *ngFor="let project of paginatedProjects" class="project-card">
+        <div *ngFor="let project of paginatedProjects" class="project-card" (click)="selectProject(project)">
           <div class="project-header">
             <div class="project-avatar">
               <img *ngIf="project.avatarUrl" [src]="project.avatarUrl" [alt]="project.name">
@@ -162,6 +162,9 @@
             <div class="project-info">
               <h3 class="project-name" [title]="project.name">{{ project.name }}</h3>
               <p class="project-key">{{ project.key }}</p>
+            </div>
+            <div class="project-status">
+              <div class="status-indicator active"></div>
             </div>
           </div>
 
@@ -192,7 +195,7 @@
           </div>
 
           <div class="project-actions">
-            <button class="action-button primary" (click)="viewProjectIssues(project.key)">
+            <button class="action-button primary" (click)="navigateToProjectIssues(project.key); $event.stopPropagation()">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
@@ -203,85 +206,108 @@
         </div>
       </div>
 
-      <!-- Vue liste -->
-      <div *ngIf="viewMode === 'list'" class="projects-list">
-        <div class="list-header">
-          <div class="list-column name-column">
-            <button class="column-header" (click)="onSortChange('name')">
-              Nom
-              <svg *ngIf="sortBy === 'name'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <!-- ✅ Correction des points SVG -->
-                <polyline [attr.points]="sortDirection === 'asc' ? '6 9 12 15 18 9' : '18 15 12 9 6 15'"/>
-              </svg>
-            </button>
-          </div>
-          <div class="list-column key-column">
-            <button class="column-header" (click)="onSortChange('key')">
-              Clé
-              <svg *ngIf="sortBy === 'key'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline [attr.points]="sortDirection === 'asc' ? '6 9 12 15 18 9' : '18 15 12 9 6 15'"/>
-              </svg>
-            </button>
-          </div>
-          <div class="list-column category-column">
-            <button class="column-header" (click)="onSortChange('category')">
-              Catégorie
-              <svg *ngIf="sortBy === 'category'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline [attr.points]="sortDirection === 'asc' ? '6 9 12 15 18 9' : '18 15 12 9 6 15'"/>
-              </svg>
-            </button>
-          </div>
-          <div class="list-column lead-column">
-            <button class="column-header" (click)="onSortChange('lead')">
-              Responsable
-              <svg *ngIf="sortBy === 'lead'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline [attr.points]="sortDirection === 'asc' ? '6 9 12 15 18 9' : '18 15 12 9 6 15'"/>
-              </svg>
-            </button>
-          </div>
-          <div class="list-column actions-column">Actions</div>
+      <!-- Vue liste STYLE JIRA COMME L'IMAGE -->
+      <div *ngIf="viewMode === 'list'" class="jira-projects-container">
+        <div class="jira-header">
+          <h2>Tous les types de projet - Toutes les catégories</h2>
         </div>
 
-        <div *ngFor="let project of paginatedProjects" class="list-row">
-          <div class="list-column name-column">
-            <div class="project-name-cell">
-              <div class="project-avatar-small">
-                <img *ngIf="project.avatarUrl" [src]="project.avatarUrl" [alt]="project.name">
-                <div *ngIf="!project.avatarUrl" class="avatar-placeholder-small">
-                  {{ project.name.charAt(0).toUpperCase() }}
-                </div>
-              </div>
-              <div class="project-name-info">
-                <span class="project-name" [title]="project.name">{{ project.name }}</span>
-                <span *ngIf="project.description" class="project-description-small" [title]="project.description">
-                  {{ project.description }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="list-column key-column">
-            <span class="project-key-badge">{{ project.key }}</span>
-          </div>
-          <div class="list-column category-column">
-            <span *ngIf="project.categoryName" class="category-badge">{{ project.categoryName }}</span>
-            <span *ngIf="!project.categoryName" class="empty-value">-</span>
-          </div>
-          <div class="list-column lead-column">
-            <span *ngIf="project.leadName">{{ project.leadName }}</span>
-            <span *ngIf="!project.leadName" class="empty-value">-</span>
-          </div>
-          <div class="list-column actions-column">
-            <button class="action-button-small" (click)="viewProjectIssues(project.key)" title="Voir les tickets">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-              </svg>
-            </button>
-          </div>
+        <div class="jira-search-container">
+          <input
+            type="text"
+            placeholder="Recherche en cours..."
+            [value]="searchTerm"
+            (input)="onSearchChange($any($event.target).value)"
+            class="jira-search-input"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="jira-search-icon">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+        </div>
+
+        <div class="jira-table-container">
+          <table class="jira-table">
+            <thead class="jira-table-header">
+              <tr>
+                <th class="project-column">Projet</th>
+                <th class="key-column">Clé</th>
+                <th class="type-column">Type de projet</th>
+                <th class="lead-column">Chef de projet</th>
+                <th class="category-column">Catégorie de projet</th>
+                <th class="actions-column">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let project of paginatedProjects" class="jira-table-row">
+                <!-- Colonne Projet avec avatar -->
+                <td class="project-column">
+                  <div class="jira-project-cell">
+                    <div class="jira-project-avatar" [style.background-color]="getProjectColor(project.key)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                      </svg>
+                    </div>
+                    <span class="jira-project-name">{{ project.name }}</span>
+                  </div>
+                </td>
+
+                <!-- Colonne Clé -->
+                <td class="key-column">
+                  <span class="jira-project-key">{{ project.key }}</span>
+                </td>
+
+                <!-- Colonne Type de projet -->
+                <td class="type-column">
+                  <div class="jira-project-type">
+                    <div class="project-type-icon" [style.background-color]="getProjectTypeColor(project.categoryName)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                      </svg>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Colonne Chef de projet -->
+                <td class="lead-column">
+                  <div *ngIf="project.leadName" class="jira-lead-info">
+                    <span class="jira-lead-name">{{ project.leadName }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0052cc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </div>
+                  <span *ngIf="!project.leadName" class="jira-empty-value">Pas de chef</span>
+                </td>
+
+                <!-- Colonne Catégorie -->
+                <td class="category-column">
+                  <span *ngIf="project.categoryName" class="jira-category">{{ project.categoryName }}</span>
+                  <span *ngIf="!project.categoryName" class="jira-empty-value">Pas de catégorie</span>
+                </td>
+
+                <!-- Colonne Actions -->
+                <td class="actions-column">
+                  <button
+                    class="jira-action-button"
+                    (click)="navigateToProjectIssues(project.key)"
+                    title="Voir les tickets"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Voir les tickets
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- PAGINATION -->
+      <!-- PAGINATION AMÉLIORÉE -->
       <div class="pagination" *ngIf="totalPages > 1">
         <button
           class="pagination-button"
@@ -318,6 +344,94 @@
           Page {{ currentPage }} sur {{ totalPages }}
           ({{ filteredProjects.length }} projet{{ filteredProjects.length > 1 ? 's' : '' }})
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANNEAU DES TICKETS DU PROJET SÉLECTIONNÉ -->
+  <div *ngIf="selectedProject && projectIssues.length > 0" class="project-issues-panel">
+    <div class="panel-header">
+      <h2>Tickets du projet {{ selectedProject.name }}</h2>
+      <button class="close-panel" (click)="closeProjectIssues()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="panel-content">
+      <div *ngIf="loadingIssues" class="loading-state">
+        <div class="mini-spinner"></div>
+        <p>Chargement des tickets...</p>
+      </div>
+
+      <div *ngIf="!loadingIssues" class="issues-table-container">
+        <table class="issues-table">
+          <thead class="issues-table-header">
+            <tr>
+              <th class="issue-type-cell">T</th>
+              <th>Clé</th>
+              <th>Résumé</th>
+              <th>Assigné</th>
+              <th class="priority-cell">Pr</th>
+              <th>État</th>
+              <th class="date-cell">Créé</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let issue of projectIssues" class="issues-table-row">
+              <td class="issue-type-cell">
+                <div class="issue-type-icon" [ngClass]="getIssueTypeClass(issue.issueType)">
+                  {{ getIssueTypeIcon(issue.issueType) }}
+                </div>
+              </td>
+              <td class="issue-key-cell">{{ issue.key }}</td>
+              <td class="issue-summary-cell" [title]="issue.summary">
+                {{ issue.summary }}
+              </td>
+              <td class="issue-assignee-cell">
+                <div *ngIf="issue.assignee" class="assignee-info">
+                  <div class="assignee-avatar">
+                    {{ issue.assignee.charAt(0).toUpperCase() }}
+                  </div>
+                  <span>{{ issue.assignee }}</span>
+                </div>
+                <span *ngIf="!issue.assignee" class="unassigned">Non attribué</span>
+              </td>
+              <td class="priority-cell">
+                <div class="priority-icon" [ngClass]="getPriorityClass(issue.priority)">
+                  <svg *ngIf="getPriorityClass(issue.priority) === 'high'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z"/>
+                  </svg>
+                  <svg *ngIf="getPriorityClass(issue.priority) === 'medium'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+                  <svg *ngIf="getPriorityClass(issue.priority) === 'low'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7.41 15.41L12 10.83L16.59 15.41L18 14L12 8L6 14L7.41 15.41Z"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="status-cell">
+                <div class="status-badge" [ngClass]="getStatusClass(issue.status)">
+                  <div class="status-icon">
+                    <svg *ngIf="getStatusClass(issue.status) === 'done'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    <svg *ngIf="getStatusClass(issue.status) === 'in-progress'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    <svg *ngIf="getStatusClass(issue.status) === 'to-do'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                  </div>
+                  <span class="status-text">{{ issue.status || 'N/A' }}</span>
+                </div>
+              </td>
+              <td class="date-cell">{{ formatDate(issue.created) }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

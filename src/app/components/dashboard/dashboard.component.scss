@@ -1,4 +1,3 @@
-/* ÉTAPE 4.1: VARIABLES CSS POUR LA COHÉRENCE */
 :root {
   --primary-color: #3b82f6;
   --success-color: #10b981;
@@ -21,18 +20,18 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* ÉTAPE 4.2: STYLES DE BASE */
+// ===== CONTENEUR PRINCIPAL =====
 .dashboard-container {
   min-height: 100vh;
-  background-color: var(--gray-50);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: white;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* ÉTAPE 4.3: HEADER AMÉLIORÉ */
+// ===== HEADER =====
 .dashboard-header {
-  background: white;
-  border-bottom: 1px solid var(--gray-200);
-  padding: 1rem 2rem;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e7e5e5;
+  padding: 1.5rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -50,14 +49,15 @@
 
 .dashboard-header h1 {
   margin: 0;
-  color: var(--gray-800);
+  color: #505d70;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
 .header-actions {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 1rem;
 }
 
 .refresh-button {
@@ -66,17 +66,19 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
+  background: none;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
   border-radius: 0.5rem;
   cursor: pointer;
+  font-size: 0.875rem;
   transition: all 0.2s;
-  color: var(--gray-600);
 }
 
 .refresh-button:hover:not(:disabled) {
-  background: var(--gray-200);
-  color: var(--gray-700);
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
 }
 
 .refresh-button:disabled {
@@ -89,15 +91,11 @@
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* ÉTAPE 4.4: PROFIL UTILISATEUR */
+// ===== PROFIL UTILISATEUR =====
 .user-profile {
   display: flex;
   align-items: center;
@@ -112,7 +110,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #505d70;
 }
 
 .user-info {
@@ -123,7 +121,7 @@
 
 .user-name {
   font-weight: 500;
-  color: var(--gray-800);
+  color: #505d70;
   font-size: 0.875rem;
 }
 
@@ -144,7 +142,7 @@
   color: var(--danger-color);
 }
 
-/* ÉTAPE 4.5: CHARGEMENT ET ERREURS */
+// ===== ÉTATS DE CHARGEMENT ET ERREUR =====
 .global-loading {
   display: flex;
   flex-direction: column;
@@ -156,8 +154,8 @@
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border: 3px solid var(--gray-200);
   border-top: 3px solid var(--primary-color);
   border-radius: 50%;
@@ -192,7 +190,7 @@
   background: #dc2626;
 }
 
-/* ÉTAPE 4.6: CONTENU PRINCIPAL */
+// ===== CONTENU PRINCIPAL =====
 .dashboard-content {
   padding: 2rem;
   display: flex;
@@ -200,51 +198,49 @@
   gap: 2rem;
 }
 
-/* ÉTAPE 4.7: CARTES STATISTIQUES */
+.main-dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center; /* Centre les éléments horizontalement */
+}
+
+// ===== STATISTIQUES =====
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
+  width: 100%; /* S'assure que la grille prend toute la largeur disponible */
 }
 
 .stat-card {
   background: white;
   border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   gap: 1rem;
   transition: all 0.2s;
   position: relative;
   overflow: hidden;
+  border-top: 3px solid var(--gray-200);
 }
 
-.stat-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--gray-200);
-  transition: background-color 0.2s;
+.stat-card.projects-card {
+  border-top-color: var(--primary-color);
 }
 
-.stat-card.projects-card::before {
-  background: var(--primary-color);
+.stat-card.issues-card {
+  border-top-color: var(--success-color);
 }
 
-.stat-card.issues-card::before {
-  background: var(--success-color);
+.stat-card.my-issues-card {
+  border-top-color: var(--warning-color);
 }
 
-.stat-card.my-issues-card::before {
-  background: var(--warning-color);
-}
-
-.stat-card.progress-card::before {
-  background: var(--info-color);
+.stat-card.progress-card {
+  border-top-color: var(--info-color);
 }
 
 .stat-card.clickable {
@@ -253,7 +249,7 @@
 
 .stat-card.clickable:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .stat-icon {
@@ -290,7 +286,7 @@
 
 .stat-details h3 {
   margin: 0 0 0.5rem 0;
-  color: var(--gray-500);
+  color: #444e5e;
   font-size: 0.875rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -301,19 +297,19 @@
   margin: 0 0 0.25rem 0;
   font-size: 2rem;
   font-weight: 700;
-  color: var(--gray-800);
+  color: #444e5e;
   line-height: 1;
 }
 
 .loading-text {
-  color: var(--gray-400);
+  color: #5b5e64;
 }
 
 .stat-change {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--gray-500);
+  color: #444e5e;
 }
 
 .stat-change.positive {
@@ -332,7 +328,6 @@
   color: var(--gray-400);
 }
 
-/* ÉTAPE 4.8: BARRE DE PROGRESSION */
 .progress-bar {
   width: 100%;
   height: 6px;
@@ -349,287 +344,66 @@
   transition: width 0.3s ease;
 }
 
-/* ÉTAPE 4.9: PANNEAUX */
-.dashboard-panels {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
-}
+/* Styles pour la nouvelle carte "Ajouter des widgets" */
+.stat-card.add-widget-card {
+  /* Fait en sorte que la carte s'étende sur toutes les colonnes disponibles */
+  grid-column: 1 / -1;
 
-.panel {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-
-.panel-header {
-  padding: 1.5rem 1.5rem 0 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.panel-header h2 {
-  margin: 0;
-  color: var(--gray-800);
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
-.panel-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.item-count {
-  background: var(--gray-100);
-  color: var(--gray-600);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.panel-action {
-  background: none;
-  border: none;
-  color: var(--gray-400);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  transition: all 0.2s;
-}
-
-.panel-action:hover {
-  background: var(--gray-100);
-  color: var(--primary-color);
-}
-
-.panel-content {
-  padding: 1.5rem;
-}
-
-/* ÉTAPE 4.10: ÉLÉMENTS D'ACTIVITÉ */
-.activity-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--gray-100);
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.activity-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.project-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 0.5rem;
-  object-fit: cover;
-}
-
-.avatar-placeholder {
-  width: 40px;
-  height: 40px;
-  background: var(--primary-color);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 1rem;
-  border-radius: 0.5rem;
-}
-
-.issue-type-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 0.875rem;
-}
-
-.activity-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.activity-text {
-  margin: 0 0 0.25rem 0;
-  color: var(--gray-800);
-  font-weight: 500;
-  font-size: 0.875rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.activity-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.25rem 0;
-  font-size: 0.75rem;
-  color: var(--gray-500);
-}
-
-.project-key {
-  background: var(--gray-100);
-  color: var(--gray-600);
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.25rem;
-  font-weight: 500;
-}
-
-.project-lead {
-  color: var(--gray-500);
-}
-
-.activity-category {
-  margin: 0.25rem 0 0 0;
-  color: var(--gray-400);
-  font-size: 0.75rem;
-  font-style: italic;
-}
-
-.issue-meta {
-  display: flex;
-  gap: 0.75rem;
-  font-size: 0.75rem;
-  margin: 0.25rem 0;
-  flex-wrap: wrap;
-}
-
-.issue-status,
-.issue-priority {
-  font-weight: 500;
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.25rem;
-  background: rgba(255, 255, 255, 0.8);
-}
-
-.issue-project {
-  color: var(--gray-500);
-}
-
-.activity-time {
-  margin: 0.25rem 0 0 0;
-  color: var(--gray-400);
-  font-size: 0.75rem;
-}
-
-/* ÉTAPE 4.11: ÉTATS DE CHARGEMENT ET VIDES */
-.loading-state,
-.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
   text-align: center;
-  color: var(--gray-500);
+
+  /* Rendre la carte plus grande */
+  min-height: 250px; /* Augmenté pour la rendre plus grande */
+
+  border: 2px dashed var(--gray-300); /* Bordure en pointillés pour un aspect "ajouter" */
+  background: var(--gray-50); /* Fond gris clair */
+  color: var(--gray-400); /* Couleur du texte par défaut en gris clair */
+  transition: all 0.2s ease-in-out;
+
+  /* Pour centrer la carte si elle est la seule dans le layout */
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 800px; /* Limite la largeur pour qu'elle ne soit pas trop grande sur les écrans larges */
 }
 
-.mini-spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--gray-200);
-  border-top: 2px solid var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 0.5rem;
+.stat-card.add-widget-card:hover {
+  border-color: var(--primary-color); /* Surlignage au survol */
+  color: var(--primary-color); /* Couleur du texte au survol */
+  background: var(--gray-100);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
-.empty-state svg {
-  color: var(--gray-300);
-  margin-bottom: 0.5rem;
+.add-widget-icon {
+  margin-bottom: 1rem;
 }
 
-.empty-state p {
+.add-widget-icon svg {
+  width: 64px; /* Icône plus grande */
+  height: 64px; /* Icône plus grande */
+  color: var(--gray-400); /* Couleur de l'icône */
+  transition: color 0.2s ease-in-out;
+}
+
+.stat-card.add-widget-card:hover .add-widget-icon svg {
+  color: var(--primary-color); /* Icône couleur au survol */
+}
+
+.add-widget-text {
+  font-size: 1.5rem; /* Texte plus grand */
+  font-weight: 600; /* Texte plus gras */
+  color: inherit; /* Hérite la couleur du parent pour la transition */
   margin: 0;
-  font-size: 0.875rem;
 }
 
-/* ÉTAPE 4.12: STATISTIQUES DÉTAILLÉES */
-.detailed-stats {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
+// ===== RESPONSIVE DESIGN =====
+@media (max-width: 1200px) {
+  /* Pas de .dashboard-panels ni .detailed-stats à gérer ici */
 }
 
-.stats-header {
-  margin-bottom: 1.5rem;
-}
-
-.stats-header h2 {
-  margin: 0;
-  color: var(--gray-800);
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-}
-
-.stat-item {
-  text-align: center;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background: var(--gray-50);
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: var(--gray-500);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-
-.stat-number {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--gray-800);
-}
-
-.stat-number.open {
-  color: var(--danger-color);
-}
-
-.stat-number.in-progress {
-  color: var(--warning-color);
-}
-
-.stat-number.resolved {
-  color: var(--success-color);
-}
-
-.stat-number.my-issues {
-  color: var(--primary-color);
-}
-
-/* ÉTAPE 4.13: RESPONSIVE DESIGN */
 @media (max-width: 768px) {
   .dashboard-header {
     padding: 1rem;
@@ -650,33 +424,7 @@
     grid-template-columns: 1fr;
   }
 
-  .dashboard-panels {
-    grid-template-columns: 1fr;
-  }
-
-  .panel-header {
-    padding: 1rem 1rem 0 1rem;
-  }
-
-  .panel-content {
-    padding: 1rem;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .activity-meta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-  }
-
-  .issue-meta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-  }
+  /* Pas de .dashboard-panels ni .detailed-stats à gérer ici */
 }
 
 @media (max-width: 480px) {
@@ -696,7 +444,16 @@
     font-size: 1.5rem;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .stat-card.add-widget-card {
+    min-height: 200px; /* Ajustement pour les petits écrans */
+  }
+
+  .add-widget-icon svg {
+    width: 48px; /* Icône plus petite sur mobile */
+    height: 48px; /* Icône plus petite sur mobile */
+  }
+
+  .add-widget-text {
+    font-size: 1.25rem; /* Texte plus petit sur mobile */
   }
 }

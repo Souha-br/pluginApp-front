@@ -5,12 +5,11 @@ $error-color: #ef4444;
 $text-color: #1f2937;
 $text-light: #6b7280;
 $border-color: #e5e7eb;
-$background-color: #d2d4d6;
+$background-color: #eff1f3;
 $card-background: #ffffff;
 $shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 $border-radius: 0.5rem;
 
-// Renommé de auth-container à login-container pour correspondre à notre HTML
 .login-container {
   display: flex;
   justify-content: center;
@@ -19,7 +18,6 @@ $border-radius: 0.5rem;
   padding: 2rem;
   background-color: $background-color;
 
-  // Intégration de auth-card dans login-container
   .auth-card {
     width: 100%;
     max-width: 450px;

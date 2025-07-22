@@ -3,6 +3,7 @@ import { Router } from "@angular/router"
 import { Subject, debounceTime, distinctUntilChanged } from "rxjs"
 import { takeUntil } from "rxjs/operators"
 import { Project } from "src/app/models/project.model"
+import { Issue } from "src/app/models/issue.model"
 import { JiraService } from "src/app/service/jira.service"
 
 @Component({
@@ -11,13 +12,11 @@ import { JiraService } from "src/app/service/jira.service"
   styleUrls: ["./projects.component.scss"],
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
-
   projects: Project[] = []
   filteredProjects: Project[] = []
   loading = true
   error = false
   errorMessage = ""
-
   searchTerm = ""
   selectedCategory = ""
   selectedLead = ""
@@ -40,6 +39,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   // Vues
   viewMode: "grid" | "list" = "grid"
 
+  // Gestion des tickets du projet sélectionné
+  selectedProject: Project | null = null
+  projectIssues: Issue[] = []
+  loadingIssues = false
+
   constructor(
     private jiraService: JiraService,
     private router: Router,
@@ -61,7 +65,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   private loadProjects(): void {
     this.loading = true
     this.error = false
-
     this.jiraService
       .getAllProjects()
       .pipe(takeUntil(this.destroy$))
@@ -101,7 +104,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       ...new Set(this.projects.map((p) => p.leadName).filter((leadName): leadName is string => Boolean(leadName))),
     ].sort()
   }
-
 
   onSearchChange(searchTerm: string): void {
     this.searchTerm = searchTerm
@@ -243,11 +245,102 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     }
   }
 
+  // NOUVELLE FONCTIONNALITÉ : Sélection d'un projet pour voir ses tickets
+  selectProject(project: Project): void {
+    this.selectedProject = project
+    this.loadProjectIssues(project.key)
+  }
+
+  // NOUVELLE FONCTIONNALITÉ : Chargement des tickets d'un projet
+  private loadProjectIssues(projectKey: string): void {
+    this.loadingIssues = true
+    this.projectIssues = []
+
+    this.jiraService
+      .getIssuesByProject(projectKey)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.loadingIssues = false
+          if (response.success) {
+            this.projectIssues = response.issues || []
+          } else {
+            console.error("Erreur lors du chargement des tickets:", response.message)
+            this.projectIssues = []
+          }
+        },
+        error: (error) => {
+          this.loadingIssues = false
+          console.error("Erreur lors du chargement des tickets:", error)
+          this.projectIssues = []
+        },
+      })
+  }
+
+  // NOUVELLE FONCTIONNALITÉ : Fermeture du panneau des tickets
+  closeProjectIssues(): void {
+    this.selectedProject = null
+    this.projectIssues = []
+  }
+
+  // Méthodes pour les couleurs des avatars (style Jira)
+  getProjectColor(projectKey: string): string {
+    const colors = [
+      "#0052cc", // Bleu Jira
+      "#00875a", // Vert Jira
+      "#ff5630", // Rouge Jira
+      "#ff8b00", // Orange Jira
+      "#6554c0", // Violet Jira
+      "#00b8d9", // Cyan Jira
+    ]
+
+    // Utilise le hash du projectKey pour une couleur consistante
+    let hash = 0
+    for (let i = 0; i < projectKey.length; i++) {
+      hash = projectKey.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    return colors[Math.abs(hash) % colors.length]
+  }
+
+  getProjectTypeColor(categoryName: string | undefined): string {
+    if (!categoryName) return "#00875a" // Vert par défaut
+
+    const typeColors: { [key: string]: string } = {
+      développement: "#0052cc",
+      marketing: "#ff8b00",
+      infrastructure: "#6554c0",
+      data: "#00b8d9",
+      design: "#ff5630",
+    }
+
+    return typeColors[categoryName.toLowerCase()] || "#00875a"
+  }
+
+  // NOUVELLE MÉTHODE : Redirection vers les tickets du projet
+  navigateToProjectIssues(projectKey: string): void {
+    console.log("Navigation vers les tickets du projet:", projectKey)
+    this.router
+      .navigate(["/issues"], {
+        queryParams: { project: projectKey },
+        state: { fromProjects: true },
+      })
+      .then((success) => {
+        if (success) {
+          console.log("Navigation réussie vers /issues avec projet:", projectKey)
+        } else {
+          console.error("Échec de la navigation vers /issues")
+        }
+      })
+      .catch((error) => {
+        console.error("Erreur lors de la navigation:", error)
+      })
+  }
+
+  // ANCIENNE MÉTHODE : Redirection vers les tickets du projet (DÉPRÉCIÉE)
   viewProjectIssues(projectKey: string): void {
-    this.router.navigate(["/issues"], {
-      queryParams: { project: projectKey },
-      state: { fromProjects: true },
-    })
+    // Utilise la nouvelle méthode
+    this.navigateToProjectIssues(projectKey)
   }
 
   toggleViewMode(): void {
@@ -260,6 +353,94 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(["/dashboard"])
+  }
+
+  // MÉTHODES UTILITAIRES POUR LES TICKETS
+  getIssueTypeIcon(issueType: string | undefined): string {
+    if (!issueType) return "T"
+
+    switch (issueType.toLowerCase()) {
+      case "bug":
+        return "B"
+      case "story":
+        return "S"
+      case "epic":
+        return "E"
+      case "task":
+      default:
+        return "T"
+    }
+  }
+
+  getIssueTypeClass(issueType: string | undefined): string {
+    if (!issueType) return "task"
+
+    switch (issueType.toLowerCase()) {
+      case "bug":
+        return "bug"
+      case "story":
+        return "story"
+      case "epic":
+        return "epic"
+      case "task":
+      default:
+        return "task"
+    }
+  }
+
+  getPriorityClass(priority: string | undefined): string {
+    if (!priority) return "medium"
+
+    switch (priority.toLowerCase()) {
+      case "highest":
+        return "highest"
+      case "high":
+        return "high"
+      case "medium":
+        return "medium"
+      case "low":
+        return "low"
+      case "lowest":
+        return "lowest"
+      default:
+        return "medium"
+    }
+  }
+
+  getStatusClass(status: string | undefined): string {
+    if (!status) return "open"
+
+    switch (status.toLowerCase()) {
+      case "terminé":
+      case "done":
+        return "done"
+      case "en cours":
+      case "in progress":
+        return "in-progress"
+      case "à faire":
+      case "to do":
+        return "to-do"
+      case "bloqué":
+      case "blocked":
+        return "blocked"
+      default:
+        return "open"
+    }
+  }
+
+  formatDate(dateString: string | undefined): string {
+    if (!dateString) return "N/A"
+
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    } catch {
+      return "N/A"
+    }
   }
 
   ngOnDestroy(): void {

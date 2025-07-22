@@ -1,4 +1,5 @@
 <div class="dashboard-container">
+  <!-- Header -->
   <div class="dashboard-header">
     <div class="header-content">
       <h1>Dashboard Jira</h1>
@@ -26,6 +27,7 @@
         </svg>
       </div>
       <div class="user-info">
+        <span class="user-name">Bienvenue, Utilisateur</span>
         <button class="logout-button" (click)="logout()">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -37,218 +39,102 @@
       </div>
     </div>
   </div>
-  <div *ngIf="loading.overall" class="global-loading">
-    <div class="loading-spinner"></div>
-    <p>Chargement du dashboard...</p>
-  </div>
-  <div *ngIf="(error.projects || error.issues) && !loading.overall" class="error-banner">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" x2="12" y1="8" y2="12"/>
-      <line x1="12" x2="12.01" y1="16" y2="16"/>
-    </svg>
-    <span>{{ error.message || 'Erreur lors du chargement des données' }}</span>
-    <button (click)="refreshData()" class="retry-button">Réessayer</button>
-  </div>
 
-  <div class="dashboard-content" *ngIf="!loading.overall">
-    <div class="dashboard-stats">
-      <div class="stat-card clickable projects-card" (click)="navigateToProjects()">
-        <div class="stat-icon projects">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-        </div>
-        <div class="stat-details">
-          <h3>Projets</h3>
-          <p class="stat-value">
-            <span *ngIf="!loading.projects">{{ projectStats.totalProjects }}</span>
-            <span *ngIf="loading.projects" class="loading-text">...</span>
-          </p>
-          <p class="stat-change positive">
-            {{ projectStats.activeProjects }} actifs
-          </p>
-        </div>
-        <div class="stat-trend">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
-        </div>
-      </div>
-      <div class="stat-card clickable issues-card" (click)="navigateToIssues()">
-        <div class="stat-icon issues">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" x2="8" y1="13" y2="13"/>
-            <line x1="16" x2="8" y1="17" y2="17"/>
-            <polyline points="10 9 9 9 8 9"/>
-          </svg>
-        </div>
-        <div class="stat-details">
-          <h3>Tickets</h3>
-          <p class="stat-value">
-            <span *ngIf="!loading.issues">{{ issueStats.totalIssues }}</span>
-            <span *ngIf="loading.issues" class="loading-text">...</span>
-          </p>
-          <p class="stat-change" [class.positive]="issueStats.resolvedIssues > issueStats.openIssues" [class.negative]="issueStats.openIssues > issueStats.resolvedIssues">
-            {{ issueStats.openIssues }} ouverts
-          </p>
-        </div>
-        <div class="stat-trend">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
-        </div>
-      </div>
-      <div class="stat-card clickable my-issues-card" (click)="navigateToMyIssues()">
-        <div class="stat-icon my-issues">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </div>
-        <div class="stat-details">
-          <h3>Mes Tickets</h3>
-          <p class="stat-value">
-            <span *ngIf="!loading.issues">{{ issueStats.myIssues }}</span>
-            <span *ngIf="loading.issues" class="loading-text">...</span>
-          </p>
-          <p class="stat-change neutral">Assignés à moi</p>
-        </div>
-      </div>
-      <div class="stat-card progress-card">
-        <div class="stat-icon progress">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-          </svg>
-        </div>
-        <div class="stat-details">
-          <h3>Progression</h3>
-          <p class="stat-value">{{ getProgressPercentage() }}%</p>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
-          </div>
-        </div>
+  <div class="dashboard-content">
+    <!-- État de chargement global -->
+    <div *ngIf="loading.overall" class="global-loading">
+      <div class="loading-spinner"></div>
+      <p>Chargement du dashboard...</p>
+    </div>
+
+    <!-- Affichage des erreurs -->
+    <div *ngIf="error.projects || error.issues" class="error-banner">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" x2="12" y1="8" y2="12"/>
+        <line x1="12" x2="12.01" y1="16" y2="16"/>
+      </svg>
+      <div>
+        <p>{{ error.message || "Une erreur est survenue lors du chargement des données." }}</p>
+        <button class="retry-button" (click)="refreshData()">Réessayer</button>
       </div>
     </div>
-    <div class="dashboard-panels">
-      <div class="panel projects-panel">
-        <div class="panel-header">
-          <h2>Projets Récents</h2>
-          <div class="panel-actions">
-            <span class="item-count">{{ projectStats.recentProjects.length }}</span>
-            <button class="panel-action" (click)="navigateToProjects()" title="Voir tous les projets">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="panel-content">
-          <div *ngIf="loading.projects" class="loading-state">
-            <div class="mini-spinner"></div>
-            <p>Chargement des projets...</p>
-          </div>
 
-          <div *ngIf="!loading.projects && projectStats.recentProjects.length === 0" class="empty-state">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Contenu principal -->
+    <div *ngIf="!loading.overall" class="main-dashboard-layout">
+      <!-- Cartes statistiques -->
+      <div class="dashboard-stats">
+        <!-- Carte Projets -->
+        <div class="stat-card projects-card clickable" (click)="navigateToProjects()">
+          <div class="stat-icon projects">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
             </svg>
-            <p>Aucun projet trouvé</p>
           </div>
-
-          <div *ngFor="let project of projectStats.recentProjects" class="activity-item project-item">
-            <div class="activity-icon">
-              <img *ngIf="project.avatarUrl" [src]="project.avatarUrl" [alt]="project.name" class="project-avatar">
-              <div *ngIf="!project.avatarUrl" class="avatar-placeholder">
-                {{ project.name.charAt(0).toUpperCase() }}
-              </div>
-            </div>
-            <div class="activity-details">
-              <p class="activity-text">{{ project.name }}</p>
-              <p class="activity-meta">
-                <span class="project-key">{{ project.key }}</span>
-                <span *ngIf="project.leadName" class="project-lead">• {{ project.leadName }}</span>
-              </p>
-              <p *ngIf="project.categoryName" class="activity-category">{{ project.categoryName }}</p>
-            </div>
+          <div class="stat-details">
+            <h3>Projets</h3>
+            <p class="stat-value">{{ projectStats.totalProjects }}</p>
+            <p class="stat-change positive">{{ projectStats.activeProjects }} actifs</p>
           </div>
         </div>
-      </div>
-      <div class="panel issues-panel">
-        <div class="panel-header">
-          <h2>Tickets Récents</h2>
-          <div class="panel-actions">
-            <span class="item-count">{{ issueStats.recentIssues.length }}</span>
-            <button class="panel-action" (click)="navigateToIssues()" title="Voir tous les tickets">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="panel-content">
-          <div *ngIf="loading.issues" class="loading-state">
-            <div class="mini-spinner"></div>
-            <p>Chargement des tickets...</p>
-          </div>
 
-          <div *ngIf="!loading.issues && issueStats.recentIssues.length === 0" class="empty-state">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Carte Tickets -->
+        <div class="stat-card issues-card clickable" (click)="navigateToIssues()">
+          <div class="stat-icon issues">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
             </svg>
-            <p>Aucun ticket trouvé</p>
           </div>
+          <div class="stat-details">
+            <h3>Tickets</h3>
+            <p class="stat-value">{{ issueStats.totalIssues }}</p>
+            <p class="stat-change">{{ issueStats.openIssues }} ouverts</p>
+          </div>
+        </div>
 
-          <div *ngFor="let issue of issueStats.recentIssues" class="activity-item issue-item">
-            <div class="activity-icon">
-              <div class="issue-type-icon" [style.background-color]="getStatusColor(issue.status)">
-                {{ (issue.issueType || 'T').charAt(0).toUpperCase() }}
-              </div>
-            </div>
-            <div class="activity-details">
-              <p class="activity-text">{{ issue.key }}: {{ issue.summary }}</p>
-              <div class="issue-meta">
-                <span class="issue-status" [style.color]="getStatusColor(issue.status)">
-                  {{ issue.status || 'N/A' }}
-                </span>
-                <span class="issue-priority" [style.color]="getPriorityColor(issue.priority)">
-                  {{ issue.priority || 'N/A' }}
-                </span>
-                <span class="issue-project">{{ issue.projectName || issue.projectKey }}</span>
-              </div>
-              <p class="activity-time">{{ getRelativeTime(issue.updated) }}</p>
+        <!-- Carte Mes Tickets -->
+        <div class="stat-card my-issues-card clickable" (click)="navigateToMyIssues()">
+          <div class="stat-icon my-issues">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="stat-details">
+            <h3>Mes Tickets</h3>
+            <p class="stat-value">{{ issueStats.myIssues }}</p>
+            <p class="stat-change neutral">Assignés à moi</p>
+          </div>
+        </div>
+
+        <!-- Carte Progression -->
+        <div class="stat-card progress-card">
+          <div class="stat-icon progress">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="stat-details">
+            <h3>Progression</h3>
+            <p class="stat-value">{{ getProgressPercentage() }}%</p>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width]="getProgressPercentage() + '%'"></div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="detailed-stats" *ngIf="!loading.issues">
-      <div class="stats-header">
-        <h2>Répartition des Tickets</h2>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-label">Ouverts</div>
-          <div class="stat-number open">{{ issueStats.openIssues }}</div>
+
+      <!-- Nouvelle carte "Ajouter des widgets" - Maintenant au centre de la page -->
+      <div class="stat-card add-widget-card clickable" (click)="onAddWidgetClick()">
+        <div class="add-widget-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
         </div>
-        <div class="stat-item">
-          <div class="stat-label">En cours</div>
-          <div class="stat-number in-progress">{{ issueStats.inProgressIssues }}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Résolus</div>
-          <div class="stat-number resolved">{{ issueStats.resolvedIssues }}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Mes tickets</div>
-          <div class="stat-number my-issues">{{ issueStats.myIssues }}</div>
-        </div>
+        <p class="add-widget-text">Ajouter des widgets</p>
       </div>
     </div>
   </div>

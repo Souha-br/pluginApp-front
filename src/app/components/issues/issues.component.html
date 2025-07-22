@@ -28,8 +28,16 @@
     </div>
 
     <div class="filters-container">
+      <!-- Filtre par type -->
+      <select [(ngModel)]="selectedIssueType" (change)="onIssueTypeChange()" class="filter-select">
+        <option value="">Types: Tous</option>
+        <option *ngFor="let issueType of issueTypeOptions" [value]="issueType">
+          {{ issueType }}
+        </option>
+      </select>
+
       <select [(ngModel)]="selectedStatus" (change)="onStatusChange()" class="filter-select">
-        <option value="">Tous les statuts</option>
+        <option value="">États: Tous</option>
         <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
       </select>
 
@@ -39,8 +47,15 @@
         (change)="onProjectChange()"
         class="filter-select"
       >
-        <option value="">Tous les projets</option>
+        <option value="">Projets: Tous</option>
         <option *ngFor="let project of projectOptions" [value]="project">{{ project }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedAssignee" (change)="onAssigneeChange()" class="filter-select">
+        <option value="">Assignés: Tous</option>
+        <option *ngFor="let assignee of assigneeOptions" [value]="assignee.id">
+          {{ assignee.displayName }}
+        </option>
       </select>
 
       <button class="clear-filters-button" (click)="clearFilters()">
@@ -68,71 +83,139 @@
         <polyline points="14 2 14 8 20 8"/>
       </svg>
       <h3>Aucun ticket trouvé</h3>
-      <p>{{ searchTerm || selectedStatus || selectedProject ? 'Aucun ticket ne correspond à vos critères.' : 'Aucun ticket disponible.' }}</p>
+      <p>{{ searchTerm || selectedStatus || selectedProject || selectedAssignee || selectedIssueType ? 'Aucun ticket ne correspond à vos critères.' : 'Aucun ticket disponible.' }}</p>
     </div>
 
-    <div *ngIf="!loading && filteredIssues.length > 0" class="issues-list">
+    <div *ngIf="!loading && filteredIssues.length > 0" class="issues-table-container">
       <div class="results-info">
         <p>{{ filteredIssues.length }} ticket(s) trouvé(s)</p>
       </div>
 
-      <div *ngFor="let issue of filteredIssues" class="issue-card">
-        <div class="issue-header">
-          <div class="issue-key-type">
-            <span class="issue-key">{{ issue.key }}</span>
-            <span class="issue-type">{{ issue.issueType || 'N/A' }}</span>
-          </div>
-          <div class="issue-status-priority">
-            <span class="issue-status" [style.color]="getStatusColor(issue.status || '')">
-              {{ issue.status || 'N/A' }}
-            </span>
-            <span class="issue-priority" [style.color]="getPriorityColor(issue.priority || '')">
-              {{ issue.priority || 'N/A' }}
-            </span>
-          </div>
-        </div>
+      <table class="issues-table">
+        <thead class="issues-table-header">
+          <tr>
+            <th class="issue-type-cell">T</th>
+            <th>Clé</th>
+            <th>Résumé</th>
+            <th>Projet</th>
+            <th>Assigné</th>
+            <th>Rapporteur</th>
+            <th class="priority-cell">Pr</th>
+            <th>État</th>
+            <th class="date-cell">Créé</th>
+            <th class="date-cell">Mis à jour</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let issue of filteredIssues" class="issues-table-row">
+            <td class="issue-type-cell">
+              <div class="issue-type-icon" [ngClass]="getIssueTypeClass(issue.issueType)">
+                {{ getIssueTypeIcon(issue.issueType) }}
+              </div>
+            </td>
 
-        <div class="issue-body">
-          <h3 class="issue-summary">{{ issue.summary }}</h3>
-          <p *ngIf="issue.description" class="issue-description">
-            {{ issue.description }}
-          </p>
-        </div>
+            <td class="issue-key-cell">{{ issue.key }}</td>
 
-        <div class="issue-footer">
-          <div class="issue-meta">
-            <div class="meta-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-              </svg>
-              <span>{{ issue.projectName || issue.projectKey || 'N/A' }}</span>
-            </div>
-            <div *ngIf="issue.assignee" class="meta-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              <span>{{ issue.assignee }}</span>
-            </div>
-            <div class="meta-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                <line x1="16" x2="16" y1="2" y2="6"/>
-                <line x1="8" x2="8" y1="2" y2="6"/>
-                <line x1="3" x2="21" y1="10" y2="10"/>
-              </svg>
-              <span>Créé le {{ formatDate(issue.created || '') }}</span>
-            </div>
-            <div class="meta-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-              </svg>
-              <span>Mis à jour le {{ formatDate(issue.updated || '') }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+            <td class="issue-summary-cell" [title]="issue.summary">
+              {{ issue.summary }}
+            </td>
+
+            <td class="issue-project-cell">
+              <span class="project-badge">{{ issue.projectName || issue.projectKey || 'N/A' }}</span>
+            </td>
+
+            <td class="issue-assignee-cell">
+              <div *ngIf="issue.assignee" class="assignee-info">
+                <div class="assignee-avatar">
+                  {{ getAssigneeDisplayName(issue.assignee).charAt(0).toUpperCase() }}
+                </div>
+                <span>{{ getAssigneeDisplayName(issue.assignee) }}</span>
+              </div>
+              <span *ngIf="!issue.assignee" class="unassigned">Non attribué</span>
+            </td>
+
+            <td class="issue-reporter-cell">
+              <div *ngIf="issue.reporter" class="reporter-info">
+                <div class="reporter-avatar">
+                  {{ issue.reporter.charAt(0).toUpperCase() }}
+                </div>
+                <span>{{ issue.reporter }}</span>
+              </div>
+              <span *ngIf="!issue.reporter" class="unassigned">Non défini</span>
+            </td>
+
+             <td class="priority-cell">
+              <div class="priority-icon" [ngClass]="getPriorityClass(issue.priority)"
+                   [title]="issue.priority || 'N/A'">
+
+                <!-- Bloqueur -->
+                <svg *ngIf="getPriorityClass(issue.priority) === 'blocker'" xmlns="http://www.w3.org/2000/svg" width="15" height="16" viewBox="2 0 24 24" fill="currentColor">
+                  <path d="M12 2L22 12L12 22L2 12L12 2Z"/>
+                </svg>
+
+                <!-- High -->
+                <svg *ngIf="getPriorityClass(issue.priority) === 'high'" xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="7 5 24 24" fill="currentColor">
+                  <path d="M7 14L12 9L17 14H7Z"/>
+                </svg>
+
+                <!-- Medium -->
+                <svg *ngIf="getPriorityClass(issue.priority) === 'medium'" xmlns="http://www.w3.org/2000/svg" width="50" height="40" viewBox="12 5 24 24" fill="currentColor">
+                  <path d="M8 11H16V13H8V11Z"/>
+                </svg>
+
+                <!-- Low -->
+                <svg *ngIf="getPriorityClass(issue.priority) === 'low'" xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="7 5 24 24" fill="currentColor">
+                  <path d="M17 10L12 15L7 10H17Z"/>
+                </svg>
+
+                <!-- Mineure -->
+                <svg *ngIf="getPriorityClass(issue.priority) === 'minor'" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="9 5 24 24" fill="currentColor">
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </div>
+            </td>
+
+            <td class="status-cell">
+              <div class="status-badge" [ngClass]="getStatusClass(issue.status)">
+                <div class="status-icon">
+                  <svg *ngIf="getStatusClass(issue.status) === 'to-do' || getStatusClass(issue.status) === 'open'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+
+                  <svg *ngIf="getStatusClass(issue.status) === 'in-progress'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+
+                  <svg *ngIf="getStatusClass(issue.status) === 'done' || getStatusClass(issue.status) === 'cancelled'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+
+                  <svg *ngIf="getStatusClass(issue.status) === 'blocked'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/>
+                  </svg>
+
+                  <svg *ngIf="getStatusClass(issue.status) === 'support'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+                  </svg>
+
+                  <svg *ngIf="getStatusClass(issue.status) === 'approval'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9l-5 4.87 1.18 6.88L12 17.77l-6.18 2.98L7 14.87 2 9l6.91-1.74L12 2z"/>
+                  </svg>
+                </div>
+                <span class="status-text">{{ issue.status || 'N/A' }}</span>
+              </div>
+            </td>
+
+            <td class="date-cell">{{ formatDate(issue.created || '') }}</td>
+
+            <td class="date-cell">{{ formatDate(issue.updated || '') }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
+
+
+
+

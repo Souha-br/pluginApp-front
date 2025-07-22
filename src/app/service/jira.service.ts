@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core"
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http"
-import { type Observable, BehaviorSubject, of } from "rxjs"
+import { Observable, BehaviorSubject, of } from "rxjs"
 import { map, catchError } from "rxjs/operators"
-import type { Project, ProjectsResponse, ProjectStats } from "../models/project.model"
-import type { Issue, IssuesResponse, IssueStats } from "../models/issue.model"
+import { Project, ProjectsResponse, ProjectStats } from "../models/project.model"
+import { Issue, IssuesResponse, IssueStats } from "../models/issue.model"
 
 @Injectable({
   providedIn: "root",
@@ -16,10 +16,10 @@ export class JiraService {
   public issues$ = this.issuesSubject.asObservable()
 
   constructor(private http: HttpClient) {}
+
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem("jwt")
     console.log("🔑 Token récupéré:", token ? "Token présent" : "Aucun token")
-
     return new HttpHeaders({
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
@@ -40,15 +40,14 @@ export class JiraService {
       return of(result as T)
     }
   }
+
   getAllProjects(): Observable<ProjectsResponse> {
     const headers = this.getAuthHeaders()
     console.log("🚀 Appel API getAllProjects vers:", `${this.apiUrl}/projects`)
-
     return this.http.get<any>(`${this.apiUrl}/projects`, { headers }).pipe(
       map((response) => {
         console.log("📥 Réponse brute getAllProjects:", response)
         let adaptedResponse: ProjectsResponse
-
         if (Array.isArray(response)) {
           adaptedResponse = {
             success: true,
@@ -78,7 +77,6 @@ export class JiraService {
           this.projectsSubject.next(adaptedResponse.projects)
           console.log("✅ Cache projets mis à jour:", adaptedResponse.projects.length, "projets")
         }
-
         return adaptedResponse
       }),
       catchError(
@@ -108,14 +106,11 @@ export class JiraService {
   getAllIssues(startAt = 0, maxResults = 50): Observable<IssuesResponse> {
     const headers = this.getAuthHeaders()
     const params = new HttpParams().set("startAt", startAt.toString()).set("maxResults", maxResults.toString())
-
     console.log("🚀 Appel API getAllIssues vers:", `${this.apiUrl}/issues`)
-
     return this.http.get<any>(`${this.apiUrl}/issues`, { headers, params }).pipe(
       map((response) => {
         console.log("📥 Réponse brute getAllIssues:", response)
         let adaptedResponse: IssuesResponse
-
         if (Array.isArray(response)) {
           adaptedResponse = {
             success: true,
@@ -141,12 +136,10 @@ export class JiraService {
             issues: [],
           }
         }
-
         if (adaptedResponse.success && adaptedResponse.issues) {
           this.issuesSubject.next(adaptedResponse.issues)
           console.log("✅ Cache tickets mis à jour:", adaptedResponse.issues.length, "tickets")
         }
-
         return adaptedResponse
       }),
       catchError(
@@ -163,12 +156,10 @@ export class JiraService {
   getIssuesByProject(projectKey: string): Observable<IssuesResponse> {
     const headers = this.getAuthHeaders()
     console.log("🚀 Appel API getIssuesByProject vers:", `${this.apiUrl}/issues/project/${projectKey}`)
-
     return this.http.get<any>(`${this.apiUrl}/issues/project/${projectKey}`, { headers }).pipe(
       map((response) => {
         console.log("📥 Réponse brute getIssuesByProject:", response)
         let adaptedResponse: IssuesResponse
-
         if (Array.isArray(response)) {
           adaptedResponse = {
             success: true,
@@ -193,11 +184,9 @@ export class JiraService {
             issues: [],
           }
         }
-
         if (adaptedResponse.success && adaptedResponse.issues) {
           this.issuesSubject.next(adaptedResponse.issues)
         }
-
         return adaptedResponse
       }),
       catchError(
@@ -210,26 +199,22 @@ export class JiraService {
       ),
     )
   }
+
   getIssueStats(): Observable<IssueStats> {
     return this.issues$.pipe(
       map((issues) => {
         console.log("📊 Calcul des stats tickets pour:", issues.length, "tickets")
-
         const openIssues = issues.filter(
           (issue) => issue.status && ["Open", "To Do", "New", "TODO"].includes(issue.status),
         ).length
-
         const inProgressIssues = issues.filter(
           (issue) => issue.status && ["In Progress", "In Review", "Testing", "PROGRESS"].includes(issue.status),
         ).length
-
         const resolvedIssues = issues.filter(
           (issue) => issue.status && ["Done", "Closed", "Resolved", "DONE"].includes(issue.status),
         ).length
-
         const currentUser = this.getCurrentUser()
         const myIssues = issues.filter((issue) => issue.assignee === currentUser).length
-
         const stats = {
           totalIssues: issues.length,
           openIssues,
@@ -238,19 +223,19 @@ export class JiraService {
           myIssues,
           recentIssues: issues.slice(0, 5),
         }
-
         console.log("📊 Stats calculées:", stats)
         return stats
       }),
     )
   }
+
   private getCurrentUser(): string {
     return localStorage.getItem("currentUser") || ""
   }
+
   testApiConnection(): Observable<boolean> {
     const headers = this.getAuthHeaders()
     console.log("🔍 Test de connectivité API")
-
     return this.http.get<any>(`${this.apiUrl}/health`, { headers }).pipe(
       map((response) => {
         console.log("✅ API accessible:", response)
@@ -260,6 +245,96 @@ export class JiraService {
         console.error("❌ API non accessible:", error)
         return of(false)
       }),
+    )
+  }
+
+  // MÉTHODES POUR LES UTILISATEURS - CORRIGÉES
+  getAllUsers(): Observable<any> {
+    const headers = this.getAuthHeaders()
+    console.log("🚀 Appel API getAllUsers vers:", `${this.apiUrl}/users`)
+    return this.http.get<any>(`${this.apiUrl}/users`, { headers }).pipe(
+      map((response) => {
+        console.log("📥 Réponse brute getAllUsers:", response)
+        let adaptedResponse: any
+        if (Array.isArray(response)) {
+          adaptedResponse = {
+            success: true,
+            message: "Utilisateurs récupérés avec succès",
+            count: response.length,
+            users: response,
+          }
+        } else if (response && response.users) {
+          adaptedResponse = response
+        } else if (response && Array.isArray(response.data)) {
+          adaptedResponse = {
+            success: true,
+            message: "Utilisateurs récupérés avec succès",
+            count: response.data.length,
+            users: response.data,
+          }
+        } else {
+          console.warn("⚠️ Format de réponse inattendu pour les utilisateurs:", response)
+          adaptedResponse = {
+            success: false,
+            message: "Format de réponse inattendu",
+            count: 0,
+            users: [],
+          }
+        }
+        return adaptedResponse
+      }),
+      catchError(
+        this.handleError<any>("getAllUsers", {
+          success: false,
+          message: "Erreur lors de la récupération des utilisateurs",
+          count: 0,
+          users: [],
+        }),
+      ),
+    )
+  }
+
+  getUsersByProject(projectKey: string): Observable<any> {
+    const headers = this.getAuthHeaders()
+    console.log("🚀 Appel API getUsersByProject vers:", `${this.apiUrl}/projects/${projectKey}/users`)
+    return this.http.get<any>(`${this.apiUrl}/projects/${projectKey}/users`, { headers }).pipe(
+      map((response) => {
+        console.log("📥 Réponse brute getUsersByProject:", response)
+        let adaptedResponse: any
+        if (Array.isArray(response)) {
+          adaptedResponse = {
+            success: true,
+            message: "Utilisateurs du projet récupérés avec succès",
+            count: response.length,
+            users: response,
+          }
+        } else if (response && response.users) {
+          adaptedResponse = response
+        } else if (response && Array.isArray(response.data)) {
+          adaptedResponse = {
+            success: true,
+            message: "Utilisateurs du projet récupérés avec succès",
+            count: response.data.length,
+            users: response.data,
+          }
+        } else {
+          adaptedResponse = {
+            success: false,
+            message: "Format de réponse inattendu",
+            count: 0,
+            users: [],
+          }
+        }
+        return adaptedResponse
+      }),
+      catchError(
+        this.handleError<any>("getUsersByProject", {
+          success: false,
+          message: "Erreur lors de la récupération des utilisateurs du projet",
+          count: 0,
+          users: [],
+        }),
+      ),
     )
   }
 }
