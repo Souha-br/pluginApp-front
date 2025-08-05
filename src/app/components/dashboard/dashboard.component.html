@@ -1,8 +1,12 @@
 <div class="dashboard-container">
+
   <!-- Header -->
   <div class="dashboard-header">
     <div class="header-content">
-      <h1>Dashboard Jira</h1>
+      <a class="navbar-brand" href="#">
+        <img src="assets/jiralogo.png" alt="Jira Logo" class="navbar-logo">
+      </a>
+      <h1>Dashboard</h1>
       <div class="header-actions">
         <button
           class="refresh-button"
@@ -75,7 +79,6 @@
           <div class="stat-details">
             <h3>Projets</h3>
             <p class="stat-value">{{ projectStats.totalProjects }}</p>
-            <p class="stat-change positive">{{ projectStats.activeProjects }} actifs</p>
           </div>
         </div>
 
@@ -90,7 +93,6 @@
           <div class="stat-details">
             <h3>Tickets</h3>
             <p class="stat-value">{{ issueStats.totalIssues }}</p>
-            <p class="stat-change">{{ issueStats.openIssues }} ouverts</p>
           </div>
         </div>
 
@@ -105,7 +107,6 @@
           <div class="stat-details">
             <h3>Mes Tickets</h3>
             <p class="stat-value">{{ issueStats.myIssues }}</p>
-            <p class="stat-change neutral">Assignés à moi</p>
           </div>
         </div>
 

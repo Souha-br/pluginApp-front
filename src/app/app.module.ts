@@ -8,10 +8,11 @@ import { AppComponent } from "./app.component"
 import { DashboardComponent } from "./components/dashboard/dashboard.component"
 import { ProjectsComponent } from "./components/projects/projects.component"
 import { IssuesComponent } from "./components/issues/issues.component"
-import { LoginComponent } from "./components/login/login.component"
+import { LoginComponent } from "./components/login/login.component";
+import { IssueDetailsComponent } from './components/issue-details/issue-details.component'
 
 @NgModule({
-  declarations: [AppComponent, DashboardComponent, ProjectsComponent, IssuesComponent, LoginComponent],
+  declarations: [AppComponent, DashboardComponent, ProjectsComponent, IssuesComponent, LoginComponent, IssueDetailsComponent],
   imports: [BrowserModule, AppRoutingModule, HttpClientModule, FormsModule],
   providers: [],
   bootstrap: [AppComponent],

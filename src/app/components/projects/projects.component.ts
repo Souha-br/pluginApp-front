@@ -22,24 +22,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   selectedLead = ""
   sortBy = "name"
   sortDirection: "asc" | "desc" = "asc"
-
-  // Options de filtrage
-  categories: string[] = []
-  leads: string[] = []
-
-  // Pagination
   currentPage = 1
   itemsPerPage = 12
   totalPages = 1
-
-  // Recherche avec debounce
   private searchSubject = new Subject<string>()
   private destroy$ = new Subject<void>()
-
-  // Vues
-  viewMode: "grid" | "list" = "grid"
-
-  // Gestion des tickets du projet sélectionné
   selectedProject: Project | null = null
   projectIssues: Issue[] = []
   loadingIssues = false
@@ -73,36 +60,18 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           this.loading = false
           if (response.success) {
             this.projects = response.projects
-            this.extractFilterOptions()
             this.applyFilters()
           } else {
             this.error = true
             this.errorMessage = response.message
           }
         },
-        error: (error) => {
+        error: () => {
           this.loading = false
           this.error = true
           this.errorMessage = "Erreur lors du chargement des projets"
-          console.error("Erreur:", error)
         },
       })
-  }
-
-  private extractFilterOptions(): void {
-    // Catégories uniques en filtrant les valeurs undefined
-    this.categories = [
-      ...new Set(
-        this.projects
-          .map((p) => p.categoryName)
-          .filter((categoryName): categoryName is string => Boolean(categoryName)),
-      ),
-    ].sort()
-
-    // Responsables uniques en filtrant les valeurs undefined
-    this.leads = [
-      ...new Set(this.projects.map((p) => p.leadName).filter((leadName): leadName is string => Boolean(leadName))),
-    ].sort()
   }
 
   onSearchChange(searchTerm: string): void {
@@ -110,7 +79,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.searchSubject.next(searchTerm)
   }
 
-  private performSearch(searchTerm: string): void {
+  private performSearch(_: string): void {
     this.currentPage = 1
     this.applyFilters()
   }
@@ -118,7 +87,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   applyFilters(): void {
     let filtered = [...this.projects]
 
-    // Filtre par terme de recherche
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase()
       filtered = filtered.filter(
@@ -129,20 +97,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       )
     }
 
-    // Filtre par catégorie
-    if (this.selectedCategory) {
-      filtered = filtered.filter((project) => project.categoryName === this.selectedCategory)
-    }
-
-    // Filtre par responsable
-    if (this.selectedLead) {
-      filtered = filtered.filter((project) => project.leadName === this.selectedLead)
-    }
-
-    // Tri
     filtered = this.sortProjects(filtered)
-
-    // Mise à jour des résultats
     this.filteredProjects = filtered
     this.updatePagination()
   }
@@ -161,14 +116,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           valueA = a.key.toLowerCase()
           valueB = b.key.toLowerCase()
           break
-        case "category":
-          valueA = (a.categoryName || "").toLowerCase()
-          valueB = (b.categoryName || "").toLowerCase()
-          break
-        case "lead":
-          valueA = (a.leadName || "").toLowerCase()
-          valueB = (b.leadName || "").toLowerCase()
-          break
         default:
           valueA = a.name.toLowerCase()
           valueB = b.name.toLowerCase()
@@ -177,34 +124,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       const comparison = valueA.localeCompare(valueB)
       return this.sortDirection === "asc" ? comparison : -comparison
     })
-  }
-
-  onSortChange(sortBy: string): void {
-    if (this.sortBy === sortBy) {
-      this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc"
-    } else {
-      this.sortBy = sortBy
-      this.sortDirection = "asc"
-    }
-    this.applyFilters()
-  }
-
-  onCategoryChange(): void {
-    this.currentPage = 1
-    this.applyFilters()
-  }
-
-  onLeadChange(): void {
-    this.currentPage = 1
-    this.applyFilters()
-  }
-
-  clearFilters(): void {
-    this.searchTerm = ""
-    this.selectedCategory = ""
-    this.selectedLead = ""
-    this.currentPage = 1
-    this.applyFilters()
   }
 
   private updatePagination(): void {
@@ -245,13 +164,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     }
   }
 
-  // NOUVELLE FONCTIONNALITÉ : Sélection d'un projet pour voir ses tickets
   selectProject(project: Project): void {
     this.selectedProject = project
     this.loadProjectIssues(project.key)
   }
 
-  // NOUVELLE FONCTIONNALITÉ : Chargement des tickets d'un projet
   private loadProjectIssues(projectKey: string): void {
     this.loadingIssues = true
     this.projectIssues = []
@@ -262,50 +179,31 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.loadingIssues = false
-          if (response.success) {
-            this.projectIssues = response.issues || []
-          } else {
-            console.error("Erreur lors du chargement des tickets:", response.message)
-            this.projectIssues = []
-          }
+          this.projectIssues = response.success ? response.issues || [] : []
         },
-        error: (error) => {
+        error: () => {
           this.loadingIssues = false
-          console.error("Erreur lors du chargement des tickets:", error)
           this.projectIssues = []
         },
       })
   }
 
-  // NOUVELLE FONCTIONNALITÉ : Fermeture du panneau des tickets
   closeProjectIssues(): void {
     this.selectedProject = null
     this.projectIssues = []
   }
 
-  // Méthodes pour les couleurs des avatars (style Jira)
   getProjectColor(projectKey: string): string {
-    const colors = [
-      "#0052cc", // Bleu Jira
-      "#00875a", // Vert Jira
-      "#ff5630", // Rouge Jira
-      "#ff8b00", // Orange Jira
-      "#6554c0", // Violet Jira
-      "#00b8d9", // Cyan Jira
-    ]
-
-    // Utilise le hash du projectKey pour une couleur consistante
+    const colors = ["#0052cc", "#00875a", "#ff5630", "#ff8b00", "#6554c0", "#00b8d9"]
     let hash = 0
     for (let i = 0; i < projectKey.length; i++) {
       hash = projectKey.charCodeAt(i) + ((hash << 5) - hash)
     }
-
     return colors[Math.abs(hash) % colors.length]
   }
 
   getProjectTypeColor(categoryName: string | undefined): string {
-    if (!categoryName) return "#00875a" // Vert par défaut
-
+    if (!categoryName) return "#00875a"
     const typeColors: { [key: string]: string } = {
       développement: "#0052cc",
       marketing: "#ff8b00",
@@ -313,124 +211,18 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       data: "#00b8d9",
       design: "#ff5630",
     }
-
     return typeColors[categoryName.toLowerCase()] || "#00875a"
   }
 
-  // NOUVELLE MÉTHODE : Redirection vers les tickets du projet
   navigateToProjectIssues(projectKey: string): void {
-    console.log("Navigation vers les tickets du projet:", projectKey)
-    this.router
-      .navigate(["/issues"], {
-        queryParams: { project: projectKey },
-        state: { fromProjects: true },
-      })
-      .then((success) => {
-        if (success) {
-          console.log("Navigation réussie vers /issues avec projet:", projectKey)
-        } else {
-          console.error("Échec de la navigation vers /issues")
-        }
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la navigation:", error)
-      })
-  }
-
-  // ANCIENNE MÉTHODE : Redirection vers les tickets du projet (DÉPRÉCIÉE)
-  viewProjectIssues(projectKey: string): void {
-    // Utilise la nouvelle méthode
-    this.navigateToProjectIssues(projectKey)
-  }
-
-  toggleViewMode(): void {
-    this.viewMode = this.viewMode === "grid" ? "list" : "grid"
-  }
-
-  refreshProjects(): void {
-    this.loadProjects()
-  }
-
-  goBack(): void {
-    this.router.navigate(["/dashboard"])
-  }
-
-  // MÉTHODES UTILITAIRES POUR LES TICKETS
-  getIssueTypeIcon(issueType: string | undefined): string {
-    if (!issueType) return "T"
-
-    switch (issueType.toLowerCase()) {
-      case "bug":
-        return "B"
-      case "story":
-        return "S"
-      case "epic":
-        return "E"
-      case "task":
-      default:
-        return "T"
-    }
-  }
-
-  getIssueTypeClass(issueType: string | undefined): string {
-    if (!issueType) return "task"
-
-    switch (issueType.toLowerCase()) {
-      case "bug":
-        return "bug"
-      case "story":
-        return "story"
-      case "epic":
-        return "epic"
-      case "task":
-      default:
-        return "task"
-    }
-  }
-
-  getPriorityClass(priority: string | undefined): string {
-    if (!priority) return "medium"
-
-    switch (priority.toLowerCase()) {
-      case "highest":
-        return "highest"
-      case "high":
-        return "high"
-      case "medium":
-        return "medium"
-      case "low":
-        return "low"
-      case "lowest":
-        return "lowest"
-      default:
-        return "medium"
-    }
-  }
-
-  getStatusClass(status: string | undefined): string {
-    if (!status) return "open"
-
-    switch (status.toLowerCase()) {
-      case "terminé":
-      case "done":
-        return "done"
-      case "en cours":
-      case "in progress":
-        return "in-progress"
-      case "à faire":
-      case "to do":
-        return "to-do"
-      case "bloqué":
-      case "blocked":
-        return "blocked"
-      default:
-        return "open"
-    }
+    this.router.navigate(["/issues"], {
+      queryParams: { project: projectKey },
+      state: { fromProjects: true },
+    })
   }
 
   formatDate(dateString: string | undefined): string {
     if (!dateString) return "N/A"
-
     try {
       const date = new Date(dateString)
       return date.toLocaleDateString("fr-FR", {
@@ -447,4 +239,62 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.destroy$.next()
     this.destroy$.complete()
   }
+  goBack(): void {
+  this.router.navigate(["/dashboard"])
+}
+
+refreshProjects(): void {
+  this.loadProjects()
+}
+
+getIssueTypeClass(issueType: string | undefined): string {
+  if (!issueType) return "task"
+  switch (issueType.toLowerCase()) {
+    case "bug": return "bug"
+    case "story": return "story"
+    case "epic": return "epic"
+    case "task":
+    default: return "task"
+  }
+}
+
+getIssueTypeIcon(issueType: string | undefined): string {
+  if (!issueType) return "T"
+  switch (issueType.toLowerCase()) {
+    case "bug": return "B"
+    case "story": return "S"
+    case "epic": return "E"
+    case "task":
+    default: return "T"
+  }
+}
+
+getPriorityClass(priority: string | undefined): string {
+  if (!priority) return "medium"
+  switch (priority.toLowerCase()) {
+    case "highest": return "highest"
+    case "high": return "high"
+    case "medium": return "medium"
+    case "low": return "low"
+    case "lowest": return "lowest"
+    default: return "medium"
+  }
+}
+
+getStatusClass(status: string | undefined): string {
+  if (!status) return "open"
+  switch (status.toLowerCase()) {
+    case "terminé":
+    case "done": return "done"
+    case "en cours":
+    case "in progress": return "in-progress"
+    case "à faire":
+    case "to do": return "to-do"
+    case "bloqué":
+    case "blocked": return "blocked"
+    default: return "open"
+  }
+}
+
+
 }

@@ -107,7 +107,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let issue of filteredIssues" class="issues-table-row">
+          <tr *ngFor="let issue of filteredIssues" class="issues-table-row" (click)="console.log('Clic sur le ticket:', issue.key); viewIssueDetails(issue.key)">
             <td class="issue-type-cell">
               <div class="issue-type-icon" [ngClass]="getIssueTypeClass(issue.issueType)">
                 {{ getIssueTypeIcon(issue.issueType) }}

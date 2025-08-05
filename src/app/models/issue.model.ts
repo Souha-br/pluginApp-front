@@ -1,4 +1,3 @@
-// Modèle pour les tickets Jira
 export interface Issue {
   id: string;
   key: string;
@@ -14,9 +13,12 @@ export interface Issue {
   created?: string;
   updated?: string;
   resolution?: string;
+  labels?: string[]
+  votes?: number
+  watchers?: number
+
 }
 
-// Réponse API pour les tickets
 export interface IssuesResponse {
   success: boolean;
   message: string;
@@ -26,7 +28,6 @@ export interface IssuesResponse {
   issues: Issue[];
 }
 
-// Statistiques des tickets
 export interface IssueStats {
   totalIssues: number;
   openIssues: number;
@@ -36,7 +37,6 @@ export interface IssueStats {
   recentIssues: Issue[];
 }
 
-// Filtres pour les tickets
 export interface IssueFilters {
   projectKey?: string;
   status?: string;
@@ -45,4 +45,10 @@ export interface IssueFilters {
   searchTerm?: string;
   startAt?: number;
   maxResults?: number;
+}
+export interface JiraApiResponse<T> {
+  success: boolean
+  message?: string
+  issues?: T[]
+  issue?: T
 }

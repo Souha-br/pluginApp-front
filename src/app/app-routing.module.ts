@@ -5,6 +5,7 @@ import { ProjectsComponent } from "./components/projects/projects.component"
 import { IssuesComponent } from "./components/issues/issues.component"
 import { LoginComponent } from "./components/login/login.component"
 import { AuthGuard } from "./guards/auth.guards"
+import { IssueDetailsComponent } from "./components/issue-details/issue-details.component"
 
 const routes: Routes = [
   { path: "", redirectTo: "/dashboard", pathMatch: "full" },
@@ -24,6 +25,8 @@ const routes: Routes = [
     component: IssuesComponent,
     canActivate: [AuthGuard],
   },
+  { path: "issues/:issueKey",
+   component: IssueDetailsComponent },
   { path: "**", redirectTo: "/dashboard" },
 ]
 
