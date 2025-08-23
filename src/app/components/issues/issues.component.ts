@@ -237,8 +237,7 @@ export class IssuesComponent implements OnInit {
     const statusLower = status.toLowerCase()
     if (statusLower.includes("annulé") || statusLower.includes("cancelled")) return "cancelled"
     if (statusLower.includes("done") || statusLower.includes("closed") || statusLower.includes("terminé")) return "done"
-    if (statusLower.includes("progress") || statusLower.includes("cours") || statusLower.includes("development"))
-      return "in-progress"
+    if (statusLower.includes("progress") || statusLower.includes("cours") || statusLower.includes("development")) return "in-progress"
     if (statusLower.includes("blocked") || statusLower.includes("bloqué")) return "blocked"
     if (statusLower.includes("support") || statusLower.includes("attente du support")) return "support"
     if (statusLower.includes("approbation") || statusLower.includes("approval")) return "approval"

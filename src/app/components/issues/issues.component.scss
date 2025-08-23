@@ -396,7 +396,13 @@
   white-space: nowrap;
 }
 
-.status-badge.to-do,
+.status-badge.to-do{
+  background: #ffebe6;
+  color: #dd19ac;
+  border-color: #ffbdad;
+}
+
+
 .status-badge.open {
   background: #ffebe6;
   color: #dd2019;

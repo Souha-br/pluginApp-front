@@ -4,6 +4,8 @@ import { Subject } from "rxjs"
 import { takeUntil } from "rxjs/operators"
 import { ProjectStats } from "../../models/project.model"
 import { Issue, IssueStats } from "../../models/issue.model"
+import { Widget } from "../../models/widget.model"
+import { WidgetService } from "src/app/service/widget.service"
 import { JiraService } from "src/app/service/jira.service"
 
 @Component({
@@ -12,7 +14,6 @@ import { JiraService } from "src/app/service/jira.service"
   styleUrls: ["./dashboard.component.scss"],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-
   projectStats: ProjectStats = {
     totalProjects: 0,
     activeProjects: 0,
@@ -42,10 +43,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Gestion des subscriptions
   private destroy$ = new Subject<void>()
 
+  showWidgetSelector = false
+  widgets: Widget[] = []
+
   constructor(
     private jiraService: JiraService,
     private router: Router,
+    private widgetService: WidgetService,
   ) {}
+
   private debugApiCalls(): void {
     console.log("🔍 Debug: Vérification du token")
     const token = localStorage.getItem("jwt")
@@ -60,8 +66,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.debugApiCalls() // Ajoutez cette ligne
+    this.debugApiCalls()
     this.initializeDashboard()
+    this.widgetService.widgets$.pipe(takeUntil(this.destroy$)).subscribe((widgets) => {
+      this.widgets = widgets
+    })
   }
 
   private initializeDashboard(): void {
@@ -267,7 +276,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onAddWidgetClick(): void {
     console.log("Ajouter des widgets cliqué !")
-    alert("Fonctionnalité d'ajout de widgets en cours de développement !")
+    this.showWidgetSelector = true
+  }
+
+  onWidgetSelectorClose(): void {
+    this.showWidgetSelector = false
+  }
+
+  onWidgetSelected(widgetType: string): void {
+    console.log("Widget sélectionné:", widgetType)
+    this.showWidgetSelector = false
+  }
+
+  removeWidget(widgetId: string): void {
+    this.widgetService.removeWidget(widgetId)
+  }
+
+  getWidgetData(widget: Widget): any {
+    switch (widget.type) {
+      case "line-chart":
+        return this.widgetService.generateTicketLineChartData(this.issues)
+      case "pie-chart":
+        return this.widgetService.generateAssigneesPieChartData(this.issues)
+      case "bubble-chart":
+        return this.widgetService.generateBubbleChartData(this.issues)
+      case "ticket-list":
+        return this.issues
+      default:
+        return null
+    }
   }
 
   // Obtenir la classe CSS pour le type de ticket

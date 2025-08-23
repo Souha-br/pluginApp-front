@@ -178,7 +178,12 @@
             <td class="status-cell">
               <div class="status-badge" [ngClass]="getStatusClass(issue.status)">
                 <div class="status-icon">
-                  <svg *ngIf="getStatusClass(issue.status) === 'to-do' || getStatusClass(issue.status) === 'open'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+
+                  <svg *ngIf="getStatusClass(issue.status) === 'to-do' " xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+
+                  <svg *ngIf="getStatusClass(issue.status) === 'open' " xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                     <circle cx="12" cy="12" r="10"/>
                   </svg>
 

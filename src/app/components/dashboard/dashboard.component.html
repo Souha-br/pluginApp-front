@@ -127,7 +127,7 @@
         </div>
       </div>
 
-      <!-- Nouvelle carte "Ajouter des widgets" - Maintenant au centre de la page -->
+      <!-- Restored original add widget card from user's code -->
       <div class="stat-card add-widget-card clickable" (click)="onAddWidgetClick()">
         <div class="add-widget-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -137,6 +137,56 @@
         </div>
         <p class="add-widget-text">Ajouter des widgets</p>
       </div>
+
+      <!-- Added widgets display section -->
+      <div class="widgets-container" *ngIf="widgets.length > 0">
+        <div class="widgets-grid">
+          <div *ngFor="let widget of widgets" class="widget-wrapper"
+               [style.grid-column]="'span ' + widget.size.width"
+               [style.grid-row]="'span ' + widget.size.height">
+
+            <!-- Line Chart Widget -->
+            <app-line-chart-widget
+              *ngIf="widget.type === 'line-chart'"
+              [data]="getWidgetData(widget)"
+              [title]="widget.title"
+              (remove)="removeWidget(widget.id)">
+            </app-line-chart-widget>
+
+            <!-- Pie Chart Widget -->
+            <app-pie-chart-widget
+              *ngIf="widget.type === 'pie-chart'"
+              [data]="getWidgetData(widget)"
+              [title]="widget.title"
+              (remove)="removeWidget(widget.id)">
+            </app-pie-chart-widget>
+
+            <!-- Bubble Chart Widget -->
+            <app-bubble-chart-widget
+              *ngIf="widget.type === 'bubble-chart'"
+              [data]="getWidgetData(widget)"
+              [title]="widget.title"
+              (remove)="removeWidget(widget.id)">
+            </app-bubble-chart-widget>
+
+            <!-- Ticket List Widget -->
+            <app-ticket-list-widget
+              *ngIf="widget.type === 'ticket-list'"
+              [data]="getWidgetData(widget)"
+              [title]="widget.title"
+              (remove)="removeWidget(widget.id)">
+            </app-ticket-list-widget>
+
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
+
+<!-- Added widget selector component -->
+<app-widget-selector
+  *ngIf="showWidgetSelector"
+  (close)="onWidgetSelectorClose()">
+</app-widget-selector>

@@ -1,4 +1,5 @@
 export interface Issue {
+  project: string;
   id: string;
   key: string;
   summary: string;

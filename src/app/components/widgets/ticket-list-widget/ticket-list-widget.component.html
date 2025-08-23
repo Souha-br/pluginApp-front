@@ -1,0 +1,30 @@
+<div class="widget-container">
+  <div class="widget-header">
+    <h3>{{ title }}</h3>
+    <span class="ticket-count">{{ data.length }} tickets</span>
+  </div>
+  <div class="widget-content">
+    <div class="ticket-list">
+      <div *ngFor="let ticket of data" class="ticket-item">
+        <div class="ticket-type" [class]="ticket.issueType?.toLowerCase()">
+          {{ getIssueTypeIcon(ticket.issueType) }}
+        </div>
+        <div class="ticket-info">
+          <div class="ticket-key">{{ ticket.key }}</div>
+          <div class="ticket-summary">{{ ticket.summary }}</div>
+        </div>
+        <div class="ticket-meta">
+          <div class="ticket-priority" [class]="getPriorityClass(ticket.priority)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="7 13 12 18 17 13"></polyline>
+              <polyline points="7 6 12 11 17 6"></polyline>
+            </svg>
+          </div>
+          <div class="ticket-status" [class]="getStatusClass(ticket.status)">
+            {{ ticket.status }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
